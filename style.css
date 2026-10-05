@@ -1,0 +1,54 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #101018;
+  color: #e8e8f0;
+  font-family: "Consolas", "Menlo", monospace;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.hud__item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hud__label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8b8ba7;
+}
+
+.hud__value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #f2d16b;
+}
+
+canvas {
+  display: block;
+  background: #000;
+  border: 2px solid #2c2c3d;
+  image-rendering: pixelated;
+}
