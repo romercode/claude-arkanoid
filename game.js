@@ -1,8 +1,8 @@
 const GAME_W = 800;
 const GAME_H = 600;
 
-const PADDLE = { w: 162, h: 14, y: GAME_H - 40, speed: 600 }; // px/s
-const BALL = { size: 16, r: 8, speed: 300 };                 // px/s
+const PADDLE = { w: 120, h: 14, y: GAME_H - 40, speed: 600 }; // px/s
+const BALL = { size: 16, r: 8, speed: 450 };                 // px/s
 const BRICK = { w: 32, h: 16, gap: 8 };
 const GRID = { top: 48, left: 32 };
 const LIVES_START = 3;
@@ -71,65 +71,40 @@ const MURO = [
 ];
 
 const LEVELS = [
-  [ // Nivel 1 — el tablero actual de la SPEC 01, sin huecos.
+  [ // Nivel 1 — 5 filas (SPEC 04), las 5 primeras del tablero de la SPEC 01.
     { color: 'magenta', segs: [ { offset: 4, count: 11 } ] },
     { color: 'hotpink', segs: [ { offset: 3, count: 13 } ] },
     { color: 'red',     segs: [ { offset: 3, count: 13 } ] },
     { color: 'green',   segs: [ { offset: 2, count: 15 } ] },
     { color: 'yellow',  segs: [ { offset: 2, count: 15 } ] },
-    { color: 'cyan',    segs: [ { offset: 1, count: 17 } ] },
-    { color: 'gray',    segs: [ { offset: 1, count: 17 } ] },
-    { color: 'red',     segs: [ { offset: 0, count: 19 } ] },
   ],
-  [ // Nivel 2 — 9 filas, pasillo central de 3 columnas (8, 9, 10) hasta abajo.
+  [ // Nivel 2 — 5 filas, pasillo central de 3 columnas (8, 9, 10).
     { color: 'magenta', segs: [ { offset: 5, count: 3 }, { offset: 11, count: 3 } ] },
     { color: 'hotpink', segs: [ { offset: 4, count: 4 }, { offset: 11, count: 4 } ] },
     { color: 'red',     segs: [ { offset: 3, count: 5 }, { offset: 11, count: 5 } ] },
     { color: 'green',   segs: [ { offset: 2, count: 6 }, { offset: 11, count: 6 } ] },
     { color: 'yellow',  segs: [ { offset: 1, count: 7 }, { offset: 11, count: 7 } ] },
-    { color: 'cyan',    segs: [ { offset: 1, count: 7 }, { offset: 11, count: 7 } ] },
-    { color: 'gray',    segs: [ { offset: 0, count: 8 }, { offset: 11, count: 8 } ] },
-    { color: 'red',     segs: [ { offset: 0, count: 8 }, { offset: 11, count: 8 } ] },
-    { color: 'magenta', segs: [ { offset: 0, count: 8 }, { offset: 11, count: 8 } ] },
   ],
-  [ // Nivel 3 — 10 filas, dos pasillos de 2 columnas (4-5 y 13-14).
+  [ // Nivel 3 — 5 filas, pasillos de 2 columnas (4-5 y 13-14).
     { color: 'magenta', segs: [ { offset: 7, count: 5 } ] },
     { color: 'hotpink', segs: [ { offset: 6, count: 7 } ] },
     { color: 'red',     segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
     { color: 'green',   segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
     { color: 'yellow',  segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
-    { color: 'cyan',    segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
-    { color: 'gray',    segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
-    { color: 'red',     segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
-    { color: 'green',   segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
-    { color: 'yellow',  segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
   ],
-  [ // Nivel 4 — 11 filas, rejilla: huecos verticales en 3, 7, 11 y 15.
+  [ // Nivel 4 — 5 filas, rejilla: huecos verticales en 3, 7, 11 y 15.
     { color: 'magenta', segs: [ { offset: 4, count: 11 } ] },
     { color: 'hotpink', segs: [ { offset: 3, count: 13 } ] },
     { color: 'red',     segs: REJILLA },
     { color: 'green',   segs: REJILLA },
     { color: 'yellow',  segs: REJILLA },
-    { color: 'cyan',    segs: REJILLA },
-    { color: 'gray',    segs: REJILLA },
-    { color: 'red',     segs: REJILLA },
-    { color: 'green',   segs: REJILLA },
-    { color: 'yellow',  segs: REJILLA },
-    { color: 'cyan',    segs: REJILLA },
   ],
-  [ // Nivel 5 — 12 filas, muro denso con pasillos de 1 columna (4 y 14).
+  [ // Nivel 5 — 5 filas, muro denso con pasillos de 1 columna (4 y 14).
     { color: 'magenta', segs: [ { offset: 5, count: 9 } ] },
     { color: 'hotpink', segs: MURO },
     { color: 'red',     segs: MURO },
     { color: 'green',   segs: MURO },
     { color: 'yellow',  segs: MURO },
-    { color: 'cyan',    segs: MURO },
-    { color: 'gray',    segs: MURO },
-    { color: 'red',     segs: MURO },
-    { color: 'green',   segs: MURO },
-    { color: 'yellow',  segs: MURO },
-    { color: 'cyan',    segs: MURO },
-    { color: 'magenta', segs: MURO },
   ],
 ];
 
@@ -292,6 +267,11 @@ function drawPhase() {
       { text: 'Puntuación: ' + state.score, font: '20px monospace' },
       { text: 'Pulsa Enter para reiniciar', font: '20px monospace' },
     ] );
+  } else if ( state.phase === 'paused' ) {
+    drawMessage( [
+      { text: 'Pausa', font: 'bold 36px monospace', color: '#ffe000' },
+      { text: 'Espacio o P para continuar', font: '20px monospace' },
+    ] );
   } else if ( state.phase === 'gameOver' ) {
     drawMessage( [
       { text: 'Fin de partida', font: 'bold 36px monospace', color: '#ff0000' },
@@ -354,6 +334,11 @@ function launch() {
   state.ball.vy = -BALL.speed * Math.cos( angle );
   state.ball.attached = false;
   state.phase = 'playing';
+}
+
+function togglePause() {
+  if ( state.phase === 'playing' ) state.phase = 'paused';
+  else if ( state.phase === 'paused' ) state.phase = 'playing';
 }
 
 function updatePaddle( dt ) {
@@ -547,6 +532,7 @@ function updateInput( dt ) {
 }
 
 canvas.addEventListener( 'mousemove', e => {
+  if ( state.phase === 'paused' ) return;
   const rect = canvas.getBoundingClientRect();
   state.paddle.x = ( e.clientX - rect.left ) * ( GAME_W / rect.width );
   clampPaddle();
@@ -559,6 +545,21 @@ window.addEventListener( 'keydown', e => {
   if ( e.key.toLowerCase() === 'm' ) {
     state.muted = !state.muted;
     save();
+    return;
+  }
+
+  if ( e.key.toLowerCase() === 'p' ) {
+    if ( state.phase === 'playing' || state.phase === 'paused' ) togglePause();
+    return;
+  }
+
+  if ( e.key === ' ' && state.phase === 'paused' ) {
+    togglePause();
+    return;
+  }
+
+  if ( e.key === ' ' && state.phase === 'playing' && !state.ball.attached ) {
+    togglePause();
     return;
   }
 
@@ -592,7 +593,7 @@ function loop( now ) {
   ctx.clearRect( 0, 0, GAME_W, GAME_H );
   updateInput( dt );
   updateBall( dt );
-  updateParticles( dt );
+  if ( state.phase !== 'paused' ) updateParticles( dt );
   drawBricks();
   drawExplosions();
   drawParticles();
