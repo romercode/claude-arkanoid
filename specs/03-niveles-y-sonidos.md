@@ -1,6 +1,6 @@
 # SPEC 03 — Niveles múltiples y sonido
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01, SPEC 02
 > **Fecha:** 2026-10-06
 > **Objetivo:** Añadir 5 niveles con progresión hasta una pantalla de victoria y sonidos de rebote y rotura con silenciador persistente.
@@ -141,28 +141,28 @@ Convenciones (las mismas que las SPEC 01 y 02): origen arriba a la izquierda, ve
 
 ## Criterios de aceptación
 
-- [ ] `index.html` se abre con doble clic (`file://`) sin errores en la consola.
-- [ ] El HUD muestra la etiqueta `Nivel` con el valor `1/5` desde el primer fotograma.
-- [ ] El tablero del nivel 1 es exactamente el de la SPEC 01: mismas 8 filas, colores, offsets y counts.
-- [ ] Los 5 niveles se pueden alcanzar jugando y cada uno muestra un tablero distinto al anterior.
-- [ ] Romper el último bloque de un nivel no final muestra el mensaje de nivel superado y detiene la bola.
-- [ ] `Enter` en el nivel superado pasa al nivel siguiente con puntuación y vidas intactas y la bola pegada a la pala.
-- [ ] El HUD del nivel se actualiza al avanzar.
-- [ ] Limpiar el quinto nivel muestra la pantalla de victoria en lugar de nivel superado.
-- [ ] `Enter` en victoria reinicia en el nivel 1 con 0 puntos, 3 vidas y el tablero completo.
-- [ ] `Enter` en fin de partida reinicia en el nivel 1 con 0 puntos, 3 vidas y el tablero completo.
-- [ ] El menú muestra su mensaje con las instrucciones de lanzamiento y de silencio.
-- [ ] Romper un bloque reproduce `assets/sounds/break-sound.mp3`.
-- [ ] El rebote en la pala y los tres rebotes de pared reproducen `assets/sounds/ball-bounce.mp3`.
-- [ ] Romper una fila entera en un mismo frame reproduce varios golpes sin errores en consola.
-- [ ] La tecla `M` silencia y reactiva los dos sonidos.
-- [ ] El rótulo `Sin sonido` se ve en el canvas mientras está silenciado y desaparece al reactivar.
-- [ ] El estado de silencio sobrevive a recargar la página.
-- [ ] El récord se guarda en `localStorage["arkanoid:v1"]` con valor `{ score, muted }` y sólo se actualiza si la puntuación lo supera.
-- [ ] Recargar la página conserva el récord y el estado de silencio.
-- [ ] Si `localStorage` lanza una excepción, el juego sigue jugable y sólo pierde la persistencia.
-- [ ] Si un `.mp3` no se puede reproducir, el juego sigue jugable y sólo pierde el sonido.
-- [ ] Ningún archivo de `assets/` ha sido modificado.
+- [x] `index.html` se abre con doble clic (`file://`) sin errores en la consola.
+- [x] El HUD muestra la etiqueta `Nivel` con el valor `1/5` desde el primer fotograma.
+- [x] El tablero del nivel 1 es exactamente el de la SPEC 01: mismas 8 filas, colores, offsets y counts.
+- [x] Los 5 niveles se pueden alcanzar jugando y cada uno muestra un tablero distinto al anterior.
+- [x] Romper el último bloque de un nivel no final muestra el mensaje de nivel superado y detiene la bola.
+- [x] `Enter` en el nivel superado pasa al nivel siguiente con puntuación y vidas intactas y la bola pegada a la pala.
+- [x] El HUD del nivel se actualiza al avanzar.
+- [x] Limpiar el quinto nivel muestra la pantalla de victoria en lugar de nivel superado.
+- [x] `Enter` en victoria reinicia en el nivel 1 con 0 puntos, 3 vidas y el tablero completo.
+- [x] `Enter` en fin de partida reinicia en el nivel 1 con 0 puntos, 3 vidas y el tablero completo.
+- [x] El menú muestra su mensaje con las instrucciones de lanzamiento y de silencio.
+- [x] Romper un bloque reproduce `assets/sounds/break-sound.mp3`.
+- [x] El rebote en la pala y los tres rebotes de pared reproducen `assets/sounds/ball-bounce.mp3`.
+- [x] Romper una fila entera en un mismo frame reproduce varios golpes sin errores en consola.
+- [x] La tecla `M` silencia y reactiva los dos sonidos.
+- [x] El rótulo `Sin sonido` se ve en el canvas mientras está silenciado y desaparece al reactivar.
+- [x] El estado de silencio sobrevive a recargar la página.
+- [x] El récord se guarda en `localStorage["arkanoid:v1"]` con valor `{ score, muted }` y sólo se actualiza si la puntuación lo supera.
+- [x] Recargar la página conserva el récord y el estado de silencio.
+- [x] Si `localStorage` lanza una excepción, el juego sigue jugable y sólo pierde la persistencia.
+- [x] Si un `.mp3` no se puede reproducir, el juego sigue jugable y sólo pierde el sonido.
+- [x] Ningún archivo de `assets/` ha sido modificado.
 
 ## Decisiones
 

@@ -31,19 +31,112 @@ const BLOCK_COLORS = {
   gray:    '#9aa0a6',
 };
 
-const LEVEL = [
-  { color: 'magenta', offset: 4, count: 11 },
-  { color: 'hotpink', offset: 3, count: 13 },
-  { color: 'red',     offset: 3, count: 13 },
-  { color: 'green',   offset: 2, count: 15 },
-  { color: 'yellow',  offset: 2, count: 15 },
-  { color: 'cyan',    offset: 1, count: 17 },
-  { color: 'gray',    offset: 1, count: 17 },
-  { color: 'red',     offset: 0, count: 19 },
+const SOUNDS = {
+  bounce: { src: 'assets/sounds/ball-bounce.mp3', volume: 0.5 },
+  break:  { src: 'assets/sounds/break-sound.mp3', volume: 0.7 },
+};
+const SOUND_POOL = 4; // instancias simultáneas por sonido
+
+const soundPools = {};
+const soundIndex = {};
+
+Object.keys( SOUNDS ).forEach( name => {
+  soundPools[ name ] = [];
+  soundIndex[ name ] = 0;
+  for ( let i = 0; i < SOUND_POOL; i++ ) {
+    const audio = new Audio( SOUNDS[ name ].src );
+    audio.preload = 'auto';
+    audio.volume = SOUNDS[ name ].volume;
+    soundPools[ name ].push( audio );
+  }
+} );
+
+function playSound( name ) {
+  if ( state.muted ) return;
+  const pool = soundPools[ name ];
+  if ( !pool ) return;
+  const audio = pool[ soundIndex[ name ] ];
+  soundIndex[ name ] = ( soundIndex[ name ] + 1 ) % pool.length;
+  audio.currentTime = 0;
+  audio.play().catch( () => {} );
+}
+
+const REJILLA = [
+  { offset: 0, count: 3 }, { offset: 4, count: 3 },
+  { offset: 8, count: 3 }, { offset: 12, count: 3 },
+  { offset: 16, count: 3 },
+];
+const MURO = [
+  { offset: 0, count: 4 }, { offset: 5, count: 9 }, { offset: 15, count: 4 },
+];
+
+const LEVELS = [
+  [ // Nivel 1 — el tablero actual de la SPEC 01, sin huecos.
+    { color: 'magenta', segs: [ { offset: 4, count: 11 } ] },
+    { color: 'hotpink', segs: [ { offset: 3, count: 13 } ] },
+    { color: 'red',     segs: [ { offset: 3, count: 13 } ] },
+    { color: 'green',   segs: [ { offset: 2, count: 15 } ] },
+    { color: 'yellow',  segs: [ { offset: 2, count: 15 } ] },
+    { color: 'cyan',    segs: [ { offset: 1, count: 17 } ] },
+    { color: 'gray',    segs: [ { offset: 1, count: 17 } ] },
+    { color: 'red',     segs: [ { offset: 0, count: 19 } ] },
+  ],
+  [ // Nivel 2 — 9 filas, pasillo central de 3 columnas (8, 9, 10) hasta abajo.
+    { color: 'magenta', segs: [ { offset: 5, count: 3 }, { offset: 11, count: 3 } ] },
+    { color: 'hotpink', segs: [ { offset: 4, count: 4 }, { offset: 11, count: 4 } ] },
+    { color: 'red',     segs: [ { offset: 3, count: 5 }, { offset: 11, count: 5 } ] },
+    { color: 'green',   segs: [ { offset: 2, count: 6 }, { offset: 11, count: 6 } ] },
+    { color: 'yellow',  segs: [ { offset: 1, count: 7 }, { offset: 11, count: 7 } ] },
+    { color: 'cyan',    segs: [ { offset: 1, count: 7 }, { offset: 11, count: 7 } ] },
+    { color: 'gray',    segs: [ { offset: 0, count: 8 }, { offset: 11, count: 8 } ] },
+    { color: 'red',     segs: [ { offset: 0, count: 8 }, { offset: 11, count: 8 } ] },
+    { color: 'magenta', segs: [ { offset: 0, count: 8 }, { offset: 11, count: 8 } ] },
+  ],
+  [ // Nivel 3 — 10 filas, dos pasillos de 2 columnas (4-5 y 13-14).
+    { color: 'magenta', segs: [ { offset: 7, count: 5 } ] },
+    { color: 'hotpink', segs: [ { offset: 6, count: 7 } ] },
+    { color: 'red',     segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'green',   segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'yellow',  segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'cyan',    segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'gray',    segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'red',     segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'green',   segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+    { color: 'yellow',  segs: [ { offset: 0, count: 4 }, { offset: 6, count: 7 }, { offset: 15, count: 4 } ] },
+  ],
+  [ // Nivel 4 — 11 filas, rejilla: huecos verticales en 3, 7, 11 y 15.
+    { color: 'magenta', segs: [ { offset: 4, count: 11 } ] },
+    { color: 'hotpink', segs: [ { offset: 3, count: 13 } ] },
+    { color: 'red',     segs: REJILLA },
+    { color: 'green',   segs: REJILLA },
+    { color: 'yellow',  segs: REJILLA },
+    { color: 'cyan',    segs: REJILLA },
+    { color: 'gray',    segs: REJILLA },
+    { color: 'red',     segs: REJILLA },
+    { color: 'green',   segs: REJILLA },
+    { color: 'yellow',  segs: REJILLA },
+    { color: 'cyan',    segs: REJILLA },
+  ],
+  [ // Nivel 5 — 12 filas, muro denso con pasillos de 1 columna (4 y 14).
+    { color: 'magenta', segs: [ { offset: 5, count: 9 } ] },
+    { color: 'hotpink', segs: MURO },
+    { color: 'red',     segs: MURO },
+    { color: 'green',   segs: MURO },
+    { color: 'yellow',  segs: MURO },
+    { color: 'cyan',    segs: MURO },
+    { color: 'gray',    segs: MURO },
+    { color: 'red',     segs: MURO },
+    { color: 'green',   segs: MURO },
+    { color: 'yellow',  segs: MURO },
+    { color: 'cyan',    segs: MURO },
+    { color: 'magenta', segs: MURO },
+  ],
 ];
 
 const state = {
   phase: 'menu',
+  level: 1,
+  muted: false,
   score: 0,
   lives: LIVES_START,
   record: 0,
@@ -54,25 +147,66 @@ const state = {
   particles: [],
 };
 
-function buildLevel() {
+function buildLevel( n ) {
   state.bricks = [];
-  LEVEL.forEach( ( row, i ) => {
-    for ( let c = 0; c < row.count; c++ ) {
-      state.bricks.push( {
-        x: GRID.left + ( row.offset + c ) * ( BRICK.w + BRICK.gap ),
-        y: GRID.top + i * ( BRICK.h + BRICK.gap ),
-        w: BRICK.w,
-        h: BRICK.h,
-        color: row.color,
-        alive: true,
-      } );
-    }
+  LEVELS[ n - 1 ].forEach( ( row, i ) => {
+    row.segs.forEach( seg => {
+      for ( let c = 0; c < seg.count; c++ ) {
+        state.bricks.push( {
+          x: GRID.left + ( seg.offset + c ) * ( BRICK.w + BRICK.gap ),
+          y: GRID.top + i * ( BRICK.h + BRICK.gap ),
+          w: BRICK.w,
+          h: BRICK.h,
+          color: row.color,
+          alive: true,
+        } );
+      }
+    } );
   } );
 }
 
 function attachBall() {
   state.ball.x = state.paddle.x;
   state.ball.y = state.paddle.y - state.ball.r;
+}
+
+function restart() {
+  state.phase = 'menu';
+  state.level = 1;
+  state.score = 0;
+  state.lives = LIVES_START;
+  state.ball.attached = true;
+  state.ball.vx = 0;
+  state.ball.vy = 0;
+  state.explosions = [];
+  state.particles = [];
+  buildLevel( state.level );
+  attachBall();
+  updateHud();
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem( RECORD_KEY );
+    if ( raw === null ) return;
+    const data = JSON.parse( raw );
+    if ( typeof data.score === 'number' ) state.record = data.score;
+    if ( typeof data.muted === 'boolean' ) state.muted = data.muted;
+  } catch ( e ) {}
+}
+
+function save() {
+  try {
+    localStorage.setItem( RECORD_KEY, JSON.stringify( { score: state.record, muted: state.muted } ) );
+  } catch ( e ) {}
+}
+
+function updateRecord() {
+  if ( state.score > state.record ) {
+    state.record = state.score;
+    save();
+    updateHud();
+  }
 }
 
 function drawExplosions() {
@@ -118,18 +252,79 @@ function drawBall() {
   drawSprite( ctx, 'ball', b.x - b.r, b.y - b.r, BALL.size, BALL.size );
 }
 
+function drawMessage( lines ) {
+  const lineHeight = 34;
+  const padX = 32;
+  const padY = 24;
+  const boxW = 480;
+  const boxH = lines.length * lineHeight + padY * 2;
+  const boxX = ( GAME_W - boxW ) / 2;
+  const boxY = ( GAME_H - boxH ) / 2;
+
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect( boxX, boxY, boxW, boxH );
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  lines.forEach( ( line, i ) => {
+    ctx.fillStyle = line.color || '#ffffff';
+    ctx.font = line.font || 'bold 24px monospace';
+    ctx.fillText( line.text, GAME_W / 2, boxY + padY + lineHeight * ( i + 0.5 ) );
+  } );
+}
+
+function drawPhase() {
+  if ( state.phase === 'menu' ) {
+    drawMessage( [
+      { text: 'ARKANOID', font: 'bold 40px monospace' },
+      { text: 'Espacio o click para lanzar', font: '20px monospace' },
+      { text: 'Flechas o ratón para mover la pala', font: '20px monospace' },
+      { text: 'M para silenciar', font: '20px monospace' },
+    ] );
+  } else if ( state.phase === 'levelClear' ) {
+    drawMessage( [
+      { text: '¡Nivel ' + state.level + ' superado!', font: 'bold 30px monospace' },
+      { text: 'Pulsa Enter para continuar', font: '20px monospace' },
+    ] );
+  } else if ( state.phase === 'victory' ) {
+    drawMessage( [
+      { text: '¡Victoria!', font: 'bold 36px monospace', color: '#ffe000' },
+      { text: 'Puntuación: ' + state.score, font: '20px monospace' },
+      { text: 'Pulsa Enter para reiniciar', font: '20px monospace' },
+    ] );
+  } else if ( state.phase === 'gameOver' ) {
+    drawMessage( [
+      { text: 'Fin de partida', font: 'bold 36px monospace', color: '#ff0000' },
+      { text: 'Puntuación: ' + state.score, font: '20px monospace' },
+      { text: 'Pulsa Enter para reiniciar', font: '20px monospace' },
+    ] );
+  }
+}
+
+function drawMuted() {
+  if ( !state.muted ) return;
+
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'top';
+  ctx.font = 'bold 16px monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText( 'Sin sonido', GAME_W - 12, 12 );
+}
+
 const canvas = document.getElementById( 'game' );
 const ctx = canvas.getContext( '2d' );
 
 const hud = {
   score: document.getElementById( 'score' ),
   record: document.getElementById( 'record' ),
+  level: document.getElementById( 'level' ),
   lives: document.getElementById( 'lives' ),
 };
 
 function updateHud() {
   hud.score.textContent = state.score;
   hud.record.textContent = state.record;
+  hud.level.textContent = state.level + '/' + LEVELS.length;
 
   hud.lives.textContent = '';
   for ( let i = 0; i < state.lives; i++ ) {
@@ -195,6 +390,7 @@ function reflectPaddle() {
   b.vx = vx;
   b.vy = -vy;
   b.y = p.y - b.r;
+  playSound( 'bounce' );
   return true;
 }
 
@@ -228,6 +424,7 @@ function breakBrick( brick ) {
   state.score += POINTS_PER_BRICK;
   state.explosions.push( { x: brick.x, y: brick.y, color: brick.color, start: performance.now() } );
   spawnParticles( brick );
+  playSound( 'break' );
   updateHud();
 }
 
@@ -271,14 +468,17 @@ function reflectWalls() {
   if ( b.y - b.r < 0 ) {
     b.y = b.r;
     b.vy = Math.abs( b.vy );
+    playSound( 'bounce' );
   }
   if ( b.x - b.r < 0 ) {
     b.x = b.r;
     b.vx = Math.abs( b.vx );
+    playSound( 'bounce' );
   }
   if ( b.x + b.r > GAME_W ) {
     b.x = GAME_W - b.r;
     b.vx = -Math.abs( b.vx );
+    playSound( 'bounce' );
   }
 }
 
@@ -298,9 +498,11 @@ function loseBall() {
   state.ball.attached = true;
   state.ball.vx = 0;
   state.ball.vy = 0;
+  updateRecord();
 }
 
 function updateBall( dt ) {
+  if ( state.phase !== 'menu' && state.phase !== 'playing' ) return;
   const b = state.ball;
   if ( b.attached ) return;
 
@@ -309,6 +511,15 @@ function updateBall( dt ) {
   reflectWalls();
   if ( reflectPaddle() ) return;
   collideBricks();
+
+  if ( !state.bricks.some( brick => brick.alive ) ) {
+    state.phase = state.level === LEVELS.length ? 'victory' : 'levelClear';
+    state.ball.attached = true;
+    state.ball.vx = 0;
+    state.ball.vy = 0;
+    if ( state.phase === 'victory' ) updateRecord();
+    return;
+  }
 
   if ( b.y - b.r > GAME_H ) loseBall();
 }
@@ -330,6 +541,7 @@ function updateParticles( dt ) {
 }
 
 function updateInput( dt ) {
+  if ( state.phase !== 'menu' && state.phase !== 'playing' ) return;
   updatePaddle( dt );
   if ( state.ball.attached ) attachBall();
 }
@@ -343,6 +555,27 @@ canvas.addEventListener( 'mousemove', e => {
 window.addEventListener( 'keydown', e => {
   if ( e.key.startsWith( 'Arrow' ) || e.key === ' ' ) e.preventDefault();
   keys.add( e.key.toLowerCase() );
+
+  if ( e.key.toLowerCase() === 'm' ) {
+    state.muted = !state.muted;
+    save();
+    return;
+  }
+
+  if ( e.key === 'Enter' && state.phase === 'levelClear' ) {
+    state.level += 1;
+    buildLevel( state.level );
+    attachBall();
+    state.phase = 'playing';
+    updateHud();
+    return;
+  }
+
+  if ( e.key === 'Enter' && ( state.phase === 'victory' || state.phase === 'gameOver' ) ) {
+    restart();
+    return;
+  }
+
   if ( e.key === ' ' || e.key === 'Enter' ) launch();
 } );
 
@@ -365,10 +598,13 @@ function loop( now ) {
   drawParticles();
   drawPaddle();
   drawBall();
+  drawPhase();
+  drawMuted();
   requestAnimationFrame( loop );
 }
 
-buildLevel();
+loadSettings();
+buildLevel( state.level );
 attachBall();
 updateHud();
 
