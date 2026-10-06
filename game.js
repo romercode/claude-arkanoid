@@ -12,6 +12,25 @@ const LAUNCH_ANGLE_MAX = 30 * Math.PI / 180;
 const BOUNCE_ANGLE_MAX = 60 * Math.PI / 180;
 const BOUNCE_MIN_VY = 100;
 
+const PARTICLE = {
+  count: 10,     // partículas por bloque roto
+  life: 400,     // ms de vida de cada partícula
+  speedMin: 60,  // px/s, velocidad mínima de salida
+  speedMax: 180, // px/s, velocidad máxima de salida
+  gravity: 400,  // px/s²
+  size: 3,       // px de lado del cuadrado dibujado
+};
+
+const BLOCK_COLORS = {
+  magenta: '#ff00ff',
+  hotpink: '#ff69b4',
+  red:     '#ff0000',
+  green:   '#00cc44',
+  yellow:  '#ffe000',
+  cyan:    '#00e5ff',
+  gray:    '#9aa0a6',
+};
+
 const LEVEL = [
   { color: 'magenta', offset: 4, count: 11 },
   { color: 'hotpink', offset: 3, count: 13 },
@@ -32,6 +51,7 @@ const state = {
   ball: { x: 0, y: 0, vx: 0, vy: 0, r: BALL.r, attached: true },
   bricks: [],
   explosions: [],
+  particles: [],
 };
 
 function buildLevel() {
@@ -70,6 +90,15 @@ function drawExplosions() {
     const index = Math.min( frames.length - 1, Math.floor( elapsed / frameMs ) );
     drawFrame( ctx, frames[ index ], ex.x, ex.y, BRICK.w, BRICK.h );
   }
+}
+
+function drawParticles() {
+  const size = PARTICLE.size;
+
+  state.particles.forEach( p => {
+    ctx.fillStyle = BLOCK_COLORS[ p.color ] || '#ffffff';
+    ctx.fillRect( p.x - size / 2, p.y - size / 2, size, size );
+  } );
 }
 
 function drawBricks() {
@@ -176,10 +205,29 @@ function brickOverlap( b, brick ) {
   };
 }
 
+function spawnParticles( brick ) {
+  const cx = brick.x + brick.w / 2;
+  const cy = brick.y + brick.h / 2;
+
+  for ( let i = 0; i < PARTICLE.count; i++ ) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = PARTICLE.speedMin + Math.random() * ( PARTICLE.speedMax - PARTICLE.speedMin );
+    state.particles.push( {
+      x: cx,
+      y: cy,
+      vx: Math.cos( angle ) * speed,
+      vy: Math.sin( angle ) * speed,
+      life: PARTICLE.life,
+      color: brick.color,
+    } );
+  }
+}
+
 function breakBrick( brick ) {
   brick.alive = false;
   state.score += POINTS_PER_BRICK;
   state.explosions.push( { x: brick.x, y: brick.y, color: brick.color, start: performance.now() } );
+  spawnParticles( brick );
   updateHud();
 }
 
@@ -265,6 +313,22 @@ function updateBall( dt ) {
   if ( b.y - b.r > GAME_H ) loseBall();
 }
 
+function updateParticles( dt ) {
+  const ms = dt * 1000;
+
+  for ( let i = state.particles.length - 1; i >= 0; i-- ) {
+    const p = state.particles[ i ];
+    p.life -= ms;
+    if ( p.life <= 0 ) {
+      state.particles.splice( i, 1 );
+      continue;
+    }
+    p.vy += PARTICLE.gravity * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+  }
+}
+
 function updateInput( dt ) {
   updatePaddle( dt );
   if ( state.ball.attached ) attachBall();
@@ -295,8 +359,10 @@ function loop( now ) {
   ctx.clearRect( 0, 0, GAME_W, GAME_H );
   updateInput( dt );
   updateBall( dt );
+  updateParticles( dt );
   drawBricks();
   drawExplosions();
+  drawParticles();
   drawPaddle();
   drawBall();
   requestAnimationFrame( loop );
