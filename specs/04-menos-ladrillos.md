@@ -1,6 +1,6 @@
 # SPEC 04 — Menos ladrillos (o más grandes)
 
-> **Estado:** Borrador
+> **Estado:** Aprobado
 > **Depende de:** SPEC 03
 > **Fecha:** 2026-10-06
 > **Objetivo:** Reducir la cantidad de ladrillos por nivel para que la partida sea menos tediosa.
