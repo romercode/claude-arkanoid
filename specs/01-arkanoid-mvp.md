@@ -1,6 +1,6 @@
 # SPEC 01 — MVP jugable de Arkanoid
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** —
 > **Fecha:** 2026-10-05
 > **Objetivo:** Juego de Arkanoid jugable en el navegador con una pala, una bola, un nivel fijo de bloques rompibles, 3 vidas y puntuación con récord persistente.
@@ -13,7 +13,7 @@ El proyecto sólo tiene `Readme.md` y `assets/`. Esta spec fija el mínimo jugab
 
 **Dentro:**
 
-- `index.html` con un `<canvas>` de 640x480, fondo negro y centrado, y un HUD en HTML (`#score`, `#record`, `#lives`).
+- `index.html` con un `<canvas>` de 800x600, fondo negro y centrado, y un HUD en HTML (`#score`, `#record`, `#lives`). El canvas lleva `id="game"` para que `game.js` lo encuentre sin depender del orden del DOM.
 - `style.css` con el layout de página, el HUD y `image-rendering` para que los sprites no se suavicen.
 - `game.js` como script clásico con el juego entero: constantes, estado, bucle, entrada, colisiones, dibujado y récord.
 - Un único nivel fijo definido en código, con los 7 colores de `SPRITES.blocks`.
@@ -33,17 +33,19 @@ El proyecto sólo tiene `Readme.md` y `assets/`. Esta spec fija el mínimo jugab
 
 ```js
 // Constantes — px, segundos y milisegundos. Origen arriba a la izquierda.
-const GAME_W = 640;
-const GAME_H = 480;
+const GAME_W = 800;
+const GAME_H = 600;
 
-const PADDLE = { w: 120, h: 14, y: GAME_H - 40, speed: 600 }; // px/s
+const PADDLE = { w: 162, h: 14, y: GAME_H - 40, speed: 600 }; // px/s
 const BALL = { size: 16, r: 8, speed: 300 };                 // px/s
-const BRICK = { w: 32, h: 16, gap: 8 };                      // tamaño nativo del sprite
-const GRID = { top: 48, left: 32 };                          // esquina superior izquierda de la cuadrícula
+const BRICK = { w: 32, h: 16, gap: 8 };
+const GRID = { top: 48, left: 32 };
 const LIVES_START = 3;
 const POINTS_PER_BRICK = 10;
 const RECORD_KEY = 'arkanoid:v1';
 const LAUNCH_ANGLE_MAX = 30 * Math.PI / 180;                 // desviación máxima al lanzar
+const BOUNCE_ANGLE_MAX = 60 * Math.PI / 180;                // desviación máxima al rebotar en la pala
+const BOUNCE_MIN_VY = 100;                                  // px/s, suelo vertical tras el rebote
 
 // Un nivel: filas ordenadas de arriba abajo. `offset` en columnas desde la
 // izquierda, `count` en bloques, `color` es un nombre de SPRITES.blocks.
@@ -102,7 +104,7 @@ Convenciones:
 
 ## Plan de implementación
 
-1. Crear `index.html` con el HUD (`#score`, `#record`, `#lives`), el `<canvas width="640" height="480">` y los scripts en este orden: `assets/spritesheet.js` y después `game.js`. Enlazar `style.css`. Prueba manual: abrir el archivo, ver el rectángulo negro, el HUD en `0 / 0 / 3`.
+1. Crear `index.html` con el HUD (`#score`, `#record`, `#lives`), el `<canvas width="800" height="600">` y los scripts en este orden: `assets/spritesheet.js` y después `game.js`. Enlazar `style.css`. Prueba manual: abrir el archivo, ver el rectángulo negro, el HUD en `0 / 0 / 3`.
 2. Crear `style.css`: fondo de página oscuro, canvas centrado con borde, HUD en una fila con etiquetas `Puntuación`, `Récord` y `Vidas`. Prueba manual: la página se ve centrada sin scroll.
 3. Crear `game.js` con constantes, `LEVEL`, `state` inicial y `loadSpritesheet( () => requestAnimationFrame( loop ) )`. No se dibuja nada todavía. Prueba manual: abrir sin errores en consola.
 4. Añadir `buildLevel()` y el dibujado de bloques con `drawSprite( ctx, 'block_' + color, x, y, 32, 16 )`. Prueba manual: las 8 filas de bloques se ven en pantalla.
@@ -121,7 +123,7 @@ Convenciones:
 ## Criterios de aceptación
 
 - [ ] `index.html` se abre con doble clic (`file://`) sin errores en la consola.
-- [ ] El canvas mide 640x480, está centrado y tiene fondo negro.
+- [ ] El canvas mide 800x600, está centrado y tiene fondo negro.
 - [ ] El HUD muestra `Puntuación`, `Récord` y `Vidas` desde el primer fotograma.
 - [ ] La pala se mueve con el ratón, con `ArrowLeft`/`ArrowRight` y con `A`/`D`, y no sale de la pantalla.
 - [ ] `Espacio`, `Enter` y el click lanzan la bola desde la pala.
@@ -151,6 +153,9 @@ Convenciones:
 - **No:** bloques con varios golpes ni irrompibles. La única regla es "un impacto, un bloque roto".
 - **Sí:** `requestAnimationFrame` con delta normalizado y velocidad en px/s. Sin esto la bola iría más rápido en pantallas de 144 Hz.
 - **Sí:** rebote con ángulo según el punto de impacto en la pala. Es el comportamiento clásico de Arkanoid y evita la bola horizontaleada.
+- **Sí:** `BOUNCE_ANGLE_MAX: 60` grados desde la vertical y `BOUNCE_MIN_VY: 100` px/s. Con ±60 grados el suelo vertical no llega a dispararse nunca, porque `cos(60°) × 300 = 150`; queda como red de seguridad por si algún día se sube el ángulo.
+- **Sí:** `PADDLE.w: 162`, el ancho nativo del sprite. Con 120 la pala se dibujaba al 74% y se veía aplastada frente a los bloques de 32 px. La tabla de riesgos protege la altura, no el ancho, así que el 120 nunca estuvo prohibido: sólo era feo.
+- **Sí:** canvas de 800x600 en lugar de 640x480. No fue una decisión estética: la fila más ancha del nivel son 19 bloques, que a 32 px con `gap: 8` ocupan 752 px y no cabían en 640.
 - **Sí:** explosión con `EXPLOSION_FRAMES` sin pausar el bucle. La animación es decorativa; el juego no puede frenarse por un bloque roto.
 - **No:** sonido. Los `.mp3` existen en `assets/sounds/` pero quedan fuera de esta spec; el bucle de reproducción de audio se decide con la spec que los use.
 - **No:** tocar `assets/spritesheet.js`. Incluido `EXPLOSION_FRAMES.gray`, que comparte coordenadas con `red`: se usa tal cual está.
@@ -169,6 +174,7 @@ Convenciones:
 | El spritesheet todavía no ha cargado en el primer fotograma | Todo el bucle arranca dentro del callback de `loadSpritesheet`; `drawSprite` y `drawFrame` no hacen nada si la imagen no está |
 | Sprites escalados por debajo de su tamaño nativo | `h` siempre coincide con la altura nativa del sprite (14, 16) y se usa `image-rendering: pixelated` |
 | `/spec-impl` requiere git y el proyecto no es repo | Inicializar git antes de implementar; la spec no depende de ello |
+| 19 columnas de 32 px con `gap: 8` necesitan 752 px de ancho | `GAME_W = 800` es el mínimo viable. Reducir el canvas descentra la rejilla y saca bloques de la pantalla: se comprobó que con 640 la fila inferior llegaba a `x = 784` |
 
 ## Lo que **no** entra en esta spec
 

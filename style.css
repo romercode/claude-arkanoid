@@ -46,6 +46,24 @@ body {
   color: #f2d16b;
 }
 
+.hud__item--lives {
+  align-items: center;
+}
+
+.hud__lives {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.hud__life {
+  width: 16px;
+  height: 16px;
+  background-image: url( 'assets/spritesheet-breakout.png' );
+  background-position: -32px -32px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
 canvas {
   display: block;
   background: #000;
